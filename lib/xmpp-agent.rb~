@@ -23,18 +23,18 @@ class XMPPAgent
     end
   end
 
-  def routes(params, messenger, msg)
+  def messages(params, messenger, msg)
 
-    get %r{(send_to|send2)\s+([^\s]+)\s+(.*)} do
+    message %r{(send_to|send2)\s+([^\s]+)\s+(.*)} do
       user, message = params[:captures].values_at 1,2
       messenger.deliver(user, message)
     end
 
-    get 'help' do
+    message 'help' do
       messenger.deliver(msg.from, "available commands: help, send_to")
     end
 
-    get '*' do
+    message '*' do
       messenger.deliver(msg.from, "need some help? type help")
     end
 
@@ -55,4 +55,7 @@ class XMPPAgent
     end
   end
 
+  def message(route, &blk)
+    get(route, &blk)
+  end
 end

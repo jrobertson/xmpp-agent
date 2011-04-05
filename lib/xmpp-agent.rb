@@ -48,7 +48,7 @@ class XMPPAgent
 
     while true
       messenger.received_messages do |msg|  
-        routes(@params, messenger, msg)
+        messages(@params, messenger, msg)
         run_route msg.body.strip
       end  
       sleep 1
