@@ -8,6 +8,7 @@ require 'app-routes'
 class XMPPAgent
   include AppRoutes
 
+  
   def initialize()        
     @route = {}; @params = {}
   end
@@ -34,7 +35,7 @@ class XMPPAgent
       messenger.deliver(msg.from, "available commands: help, send_to")
     end
 
-    message '*' do
+    message '.*' do
       messenger.deliver(msg.from, "need some help? type help")
     end
 
@@ -44,6 +45,7 @@ class XMPPAgent
 
     puts "connecting to jabber server.."  
     messenger = Jabber::Simple.new(user,password)  
+    @messenger = messenger
     puts "connected."  
 
     while true
@@ -58,4 +60,6 @@ class XMPPAgent
   def message(route, &blk)
     get(route, &blk)
   end
+  
+  def messenger() @messenger end
 end

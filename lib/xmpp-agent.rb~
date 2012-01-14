@@ -34,7 +34,7 @@ class XMPPAgent
       messenger.deliver(msg.from, "available commands: help, send_to")
     end
 
-    message '*' do
+    message '.*' do
       messenger.deliver(msg.from, "need some help? type help")
     end
 
@@ -48,7 +48,7 @@ class XMPPAgent
 
     while true
       messenger.received_messages do |msg|  
-        routes(@params, messenger, msg)
+        messages(@params, messenger, msg)
         run_route msg.body.strip
       end  
       sleep 1
