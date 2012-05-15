@@ -5,6 +5,13 @@
 require 'xmpp4r-simple'
 require 'app-routes'
 
+#!/usr/bin/env ruby
+
+# file: xmpp-agent.rb
+
+require 'xmpp4r-simple'
+require 'app-routes'
+
 class XMPPAgent
   include AppRoutes
 
@@ -52,7 +59,11 @@ class XMPPAgent
       messenger.received_messages do |msg|  
         messages(@params, messenger, msg)
         run_route msg.body.strip
-      end  
+      end
+      
+      messenger.presence_updates do |friend, presence|
+        presence_update(friend, presence)
+      end
       sleep 1
     end
   end
@@ -62,4 +73,7 @@ class XMPPAgent
   end
   
   def messenger() @messenger end
+  
+  def presence_update(friend, presence)
+  end
 end
