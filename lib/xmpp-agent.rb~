@@ -5,13 +5,6 @@
 require 'xmpp4r-simple'
 require 'app-routes'
 
-#!/usr/bin/env ruby
-
-# file: xmpp-agent.rb
-
-require 'xmpp4r-simple'
-require 'app-routes'
-
 class XMPPAgent
   include AppRoutes
 

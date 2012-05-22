@@ -10,7 +10,7 @@ class XMPPAgent
 
   
   def initialize()        
-    @route = {}; @params = {}
+    @route = {}; @params = {}; @messenger = nil; @msg = nil
   end
 
   def run(user, password)
@@ -50,7 +50,8 @@ class XMPPAgent
 
     while true
       messenger.received_messages do |msg|  
-        messages(@params, messenger, msg)
+        @msg = msg
+        messages(@params, @messenger, @msg)
         run_route msg.body.strip
       end
       
@@ -60,7 +61,11 @@ class XMPPAgent
       sleep 1
     end
   end
-
+  
+  def add_route(arg)
+    get(arg) {yield(@params, @messenger, @msg)}
+  end
+  
   def message(route, &blk)
     get(route, &blk)
   end
