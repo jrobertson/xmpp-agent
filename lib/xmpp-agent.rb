@@ -9,8 +9,9 @@ class XMPPAgent
   include AppRoutes
 
   
-  def initialize()        
-    @route = {}; @params = {}; @messenger = nil; @msg = nil
+  def initialize()
+    @routes = {}; @params = {}; @messenger = nil; @msg = nil    
+    super()    
   end
 
   def run(user, password)
@@ -32,6 +33,7 @@ class XMPPAgent
     end
 
     message 'help' do
+
       messenger.deliver(msg.from, "available commands: help, send_to")
     end
 
