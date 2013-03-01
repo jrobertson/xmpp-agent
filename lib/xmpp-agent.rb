@@ -2,78 +2,62 @@
 
 # file: xmpp-agent.rb
 
-require 'xmpp4r-simple'
+require 'em-xmpp'
 require 'app-routes'
 
 class XMPPAgent
   include AppRoutes
-
   
   def initialize()
-    @routes = {}; @params = {}; @messenger = nil; @msg = nil    
+    @routes = {}; @params = {}; @conn = nil; @ctx = nil    
     super()    
   end
+  
+  def received(conn,ctx)
 
-  def run(user, password)
-
-    begin
-      xmpp_connect(user, password)
-    rescue
-      puts ($!).to_s
-      sleep 5
-      retry
-    end
+    @conn = conn
+    @ctx = ctx
+    messages(@params, @conn, @ctx)
+    run_route ctx.body.strip   
   end
 
-  def messages(params, messenger, msg)
+  def messages(params, conn, ctx)
 
     message %r{(send_to|send2)\s+([^\s]+)\s+(.*)} do
+
       user, message = params[:captures].values_at 1,2
-      messenger.deliver(user, message)
+      data = conn.message_stanza('to' => user) {|xml| xml.body(message) }       
+      conn.send_stanza data
     end
 
     message 'help' do
-
-      messenger.deliver(msg.from, "available commands: help, send_to")
+      data = conn.message_stanza('to' => ctx.from) do |xml| 
+          xml.body('available commands: help, send_to')
+      end      
+      conn.send_stanza data
     end
 
     message '.*' do
-      messenger.deliver(msg.from, "need some help? type help")
+
+      data = conn.message_stanza('to' => ctx.from) do |xml| 
+          xml.body('need some help? type help')
+      end            
+      conn.send_stanza data
     end
 
-  end
-
-  def xmpp_connect(user, password)
-
-    puts "connecting to jabber server.."  
-    messenger = Jabber::Simple.new(user,password)  
-    @messenger = messenger
-    puts "connected."  
-
-    while true
-      messenger.received_messages do |msg|  
-        @msg = msg
-        messages(@params, @messenger, @msg)
-        run_route msg.body.strip
-      end
-      
-      messenger.presence_updates do |friend, presence|
-        presence_update(friend, presence)
-      end
-      sleep 1
-    end
-  end
+  end  
   
   def add_route(arg)
-    get(arg) {yield(@params, @messenger, @msg)}
+    get(arg) {yield(@params, @conn, @ctx)}
   end
   
   def message(route, &blk)
     get(route, &blk)
   end
   
-  def messenger() @messenger end
+  def conn() @conn end
   
-  def presence_update(friend, presence)
+  def presence_update(ctx)
   end
-end
+
+end 
