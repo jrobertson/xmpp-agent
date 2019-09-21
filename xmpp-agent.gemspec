@@ -1,14 +1,15 @@
 Gem::Specification.new do |s|
   s.name = 'xmpp-agent'
-  s.version = '0.2.2'
-  s.summary = 'xmpp-agent'
+  s.version = '0.3.0'
+  s.summary = 'Uses the Xrc gem to build a simple XMPP client.'
   s.authors = ['James Robertson']
-  s.files = Dir['lib/**/*.rb']
-  s.add_dependency('em-xmpp', '= 0.0.11')
-  s.add_dependency('app-routes') 
+  s.files = Dir['lib/xmpp-agent.rb']
+  s.add_runtime_dependency('xrc', '~> 0.1', '>= 0.1.8')
+  s.add_runtime_dependency('app-routes', '~> 0.1', '>=0.1.19') 
   s.signing_key = '../privatekeys/xmpp-agent.pem'
   s.cert_chain  = ['gem-public_cert.pem']
   s.license = 'MIT'
-  s.email = 'james@r0bertson.co.uk'
+  s.email = 'james@jamesrobertson.eu'
   s.homepage = 'https://github.com/jrobertson/xmpp-agent'
+  s.required_ruby_version = '>= 2.1.2'
 end

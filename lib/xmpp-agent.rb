@@ -2,62 +2,98 @@
 
 # file: xmpp-agent.rb
 
-require 'em-xmpp'
+require "xrc"
 require 'app-routes'
+
 
 class XMPPAgent
   include AppRoutes
   
-  def initialize()
-    @routes = {}; @params = {}; @conn = nil; @ctx = nil    
-    super()    
+  attr_reader :client
+  
+  def initialize(jid: '', password: '', port: 5222, host: nil, debug: false, callback: nil)
+    
+    @routes = {}; @params = {}; msg = nil  
+    @debug = debug
+    
+    super()
+    
+    h = {
+      jid: @jid = jid,
+      password: password,
+      port: port
+    }
+    
+    h.merge!({hosts: [ host ]}) if host
+
+    @client = client = Xrc::Client.new(h)
+            
+    @client.on_private_message do |message|
+
+      messages(@params, client, message)
+      run_route message.body.strip              
+
+    end            
+    
+    @client.on_connection_established do
+
+      on_connected()
+
+    end                
+    
+    @client.on_event do |e|
+
+      if e.name.to_s == 'presence' then
+        on_presence_update(show=e.text('show'), status=e.text('status'), user=e.attributes['from'] )
+      end
+      
+    end
+
+    
+  end
+            
+  def connect()
+    @client.connect
   end
   
-  def received(conn,ctx)
-
-    @conn = conn
-    @ctx = ctx
-    messages(@params, @conn, @ctx)
-    run_route ctx.body.strip   
+  protected
+  
+  def on_connected()
   end
-
-  def messages(params, conn, ctx)
+  
+  def on_presence_update(show, status, user)
+  end  
+  
+  private
+                        
+  def messages(params, client, msg)
 
     message %r{(send_to|send2)\s+([^\s]+)\s+(.*)} do
 
-      user, message = params[:captures].values_at 1,2
-      data = conn.message_stanza('to' => user) {|xml| xml.body(message) }       
-      conn.send_stanza data
+      user, msgout = params[:captures].values_at 1,2            
+
+      client.say(body: msgout, from: @jid, to: user, type: "chat")            
     end
 
     message 'help' do
-      data = conn.message_stanza('to' => ctx.from) do |xml| 
-          xml.body('available commands: help, send_to')
-      end      
-      conn.send_stanza data
+      msgout = 'available commands: help, send_to'
+      client.reply(body: msgout, to: msg)            
     end
 
     message '.*' do
 
-      data = conn.message_stanza('to' => ctx.from) do |xml| 
-          xml.body('need some help? type help')
-      end            
-      conn.send_stanza data
+      msgout = 'need some help? type help'
+      client.reply(body: msgout, to: msg)                        
     end
 
   end  
   
   def add_route(arg)
-    get(arg) {yield(@params, @conn, @ctx)}
+    get(arg) {yield(@params, @client, @msg)}
   end
   
   def message(route, &blk)
     get(route, &blk)
-  end
-  
-  def conn() @conn end
-  
-  def presence_update(ctx)
-  end
+  end  
 
 end 
