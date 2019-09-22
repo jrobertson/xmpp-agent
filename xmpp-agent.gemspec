@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'xmpp-agent'
-  s.version = '0.3.0'
+  s.version = '0.3.1'
   s.summary = 'Uses the Xrc gem to build a simple XMPP client.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/xmpp-agent.rb']

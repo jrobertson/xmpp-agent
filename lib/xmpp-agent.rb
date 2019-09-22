@@ -11,7 +11,7 @@ class XMPPAgent
   
   attr_reader :client
   
-  def initialize(jid: '', password: '', port: 5222, host: nil, debug: false, callback: nil)
+  def initialize(jid: '', password: '', port: 5222, host: nil, debug: false)
     
     @routes = {}; @params = {}; msg = nil  
     @debug = debug
@@ -28,10 +28,10 @@ class XMPPAgent
 
     @client = client = Xrc::Client.new(h)
             
-    @client.on_private_message do |message|
+    @client.on_private_message do |x|
 
-      messages(@params, client, message)
-      run_route message.body.strip              
+      messages(@params, client, x)
+      run_route x.body.strip              
 
     end            
     
@@ -44,16 +44,20 @@ class XMPPAgent
     @client.on_event do |e|
 
       if e.name.to_s == 'presence' then
-        on_presence_update(show=e.text('show'), status=e.text('status'), user=e.attributes['from'] )
+        self.on_presence_update(show=e.text('show'), status=e.text('status'), 
+                           user=e.attributes['from'] )
       end
       
     end
-
     
   end
             
   def connect()
     @client.connect
+  end
+  
+  def say(body: '', from: @jid, to: '')
+    @client.say(body: body, from: from, to: to, type: "chat")
   end
   
   protected
@@ -66,6 +70,7 @@ class XMPPAgent
   
   private
                         
+  # note: msg contains attributes-> :from, to:, and :body
   def messages(params, client, msg)
 
     message %r{(send_to|send2)\s+([^\s]+)\s+(.*)} do
