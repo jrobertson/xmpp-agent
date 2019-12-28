@@ -31,7 +31,12 @@ class XMPPAgent
     @client.on_private_message do |x|
 
       messages(@params, client, x)
-      run_route x.body.strip              
+      
+      begin
+        run_route x.body.strip              
+      rescue
+        # ignore any problems for now
+      end
 
     end            
     
